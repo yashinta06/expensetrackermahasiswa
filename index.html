@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Inventory Scanner AI</title>
     <style>
         /* CSS Variables untuk tema */
@@ -192,6 +192,9 @@
             border-radius: 8px;
             display: none;
             z-index: 1000;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
         }
 
         /* CSS untuk log deteksi */
@@ -246,6 +249,7 @@
         .log-item .items {
             font-weight: 600;
             color: var(--text-main);
+            word-break: break-word; /* Mencegah teks panjang merusak layout mobile */
         }
 
         .empty-state {
@@ -263,6 +267,52 @@
             font-size: 13px;
             color: #1976d2;
             max-width: 800px;
+        }
+
+        /* ========================================== */
+        /* TAMBAHAN KHUSUS UNTUK TAMPILAN MOBILE    */
+        /* ========================================== */
+        @media (max-width: 600px) {
+            body {
+                padding: 12px; /* Padding lebih kecil di HP */
+            }
+
+            h1 {
+                font-size: 20px; /* Judul lebih kecil */
+                text-align: center;
+            }
+
+            .mode-selection {
+                flex-direction: column; /* Kartu mode menumpuk ke bawah */
+                gap: 12px;
+            }
+
+            .mode-card {
+                min-width: 100%; /* Lebar penuh di HP */
+                padding: 15px;
+            }
+
+            /* Tombol dibuat full-width dan lebih besar untuk mudah ditekan jari */
+            div > .btn {
+                width: 100%;
+                margin: 6px 0;
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+
+            #camera-container, 
+            #data-section, 
+            .status-info {
+                max-width: 100%; /* Memastikan tidak overflow di layar kecil */
+            }
+
+            #data-list {
+                max-height: 250px; /* Sedikit lebih pendek agar muat di layar HP */
+            }
+
+            .log-item .items {
+                font-size: 12px; /* Teks log sedikit lebih kecil */
+            }
         }
     </style>
 </head>
@@ -418,9 +468,8 @@
         let lastSaveTime = 0;
         const SAVE_THROTTLE_MS = 3000;
 
-        // PERUBAHAN HANYA DI SINI: Menambahkan 'person' ke dalam daftar
         const TARGET_CLASSES = [
-            'person', // <-- TAMBAHAN INI AGAR BISA DETEKSI MANUSIA
+            'person', // <-- Bisa deteksi manusia
             'bottle', 'cup', 'fork', 'knife', 'spoon', 'bowl',
             'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot',
             'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch',
@@ -474,7 +523,6 @@
                 btn.textContent = '✅ Model Loaded';
                 updateStatusInfo("Model AI sudah dimuat. Klik 'Mulai Kamera' untuk mulai deteksi.");
                 
-                // Auto-start detection jika kamera sudah nyala
                 if (isCameraOn) {
                     startDetection();
                 }
@@ -574,7 +622,6 @@
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
 
-            // Set canvas size to match video
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
@@ -595,7 +642,6 @@
                             confidence: parseFloat((confidence * 100).toFixed(2))
                         });
 
-                        // Draw bounding box
                         const color = '#00FF00';
                         ctx.strokeStyle = color;
                         ctx.lineWidth = 3;
@@ -611,7 +657,6 @@
                     }
                 });
 
-                // Throttling: save every 3 seconds
                 if (detectedTargets.length > 0 && 
                     (Date.now() - lastSaveTime > SAVE_THROTTLE_MS)) {
                     saveToDatabase(detectedTargets);
@@ -632,7 +677,7 @@
             
             if (!isDetecting) {
                 isDetecting = true;
-                updateStatusInfo(" AI Detection aktif - Mendeteksi objek...");
+                updateStatusInfo("🎯 AI Detection aktif - Mendeteksi objek...");
                 detectLoop();
             }
         }
@@ -658,7 +703,7 @@
                 
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: 'environment',
+                        facingMode: 'environment', // Kamera belakang HP
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
